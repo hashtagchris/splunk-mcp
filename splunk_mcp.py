@@ -340,6 +340,12 @@ async def search_splunk(search_query: str, earliest_time: str = "-24h", latest_t
         
     try:
         service = get_splunk_connection()
+
+        # Prepend "search " to the query if not already present
+        if (not search_query.startswith("search ")):
+            logger.debug(f"Prefixing 'search' to the query")
+            search_query = "search " + search_query
+
         logger.info(f"🔍 Executing search: {search_query}")
         
         # Create the search job
