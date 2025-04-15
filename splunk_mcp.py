@@ -291,7 +291,7 @@ VERSION = "0.3.0"
 SPLUNK_HOST = os.environ.get("SPLUNK_HOST", "localhost")
 SPLUNK_PORT = int(os.environ.get("SPLUNK_PORT", "8089"))
 SPLUNK_SCHEME = os.environ.get("SPLUNK_SCHEME", "https")
-SPLUNK_PASSWORD = os.environ.get("SPLUNK_PASSWORD", "admin")
+SPLUNK_BEARER_TOKEN = os.environ.get("SPLUNK_BEARER_TOKEN", "admin")
 VERIFY_SSL = config("VERIFY_SSL", default="true", cast=bool)
 
 def get_splunk_connection() -> splunklib.client.Service:
@@ -302,18 +302,17 @@ def get_splunk_connection() -> splunklib.client.Service:
         splunklib.client.Service: Connected Splunk service
     """
     try:
-        username = os.environ.get("SPLUNK_USERNAME", "admin")
+        logger.debug(f"🔌 Connecting to Splunk at {SPLUNK_SCHEME}://{SPLUNK_HOST}:{SPLUNK_PORT} using bearer token")
         
-        logger.debug(f"🔌 Connecting to Splunk at {SPLUNK_SCHEME}://{SPLUNK_HOST}:{SPLUNK_PORT} as {username}")
-        
-        # Connect to Splunk
+        # Connect to Splunk using bearer token
+        # https://github.com/splunk/splunk-sdk-python/issues/260#issuecomment-912471145
         service = splunklib.client.connect(
             host=SPLUNK_HOST,
             port=SPLUNK_PORT,
-            username=username,
-            password=SPLUNK_PASSWORD,
+            splunkToken=SPLUNK_BEARER_TOKEN,
             scheme=SPLUNK_SCHEME,
-            verify=VERIFY_SSL
+            verify=VERIFY_SSL,
+            autologin=True
         )
         
         logger.debug(f"✅ Connected to Splunk successfully")
